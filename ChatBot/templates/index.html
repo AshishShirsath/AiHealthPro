@@ -1,0 +1,36 @@
+<script>
+    async function sendMessage() {
+        const userMessage = document.getElementById("userMessage").value.trim();
+        if (!userMessage) return;
+
+        // Display user's message
+        const chatBox = document.getElementById("chatbox");
+        chatBox.innerHTML += `<div class="user-message"><strong>You:</strong> ${userMessage}</div>`;
+
+        try {
+            // Send the message to the Flask backend
+            const response = await fetch("http://127.0.0.1:5000/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userMessage })
+            });
+
+            const data = await response.json();
+
+            // Display bot's reply
+            if (data.reply) {
+                chatBox.innerHTML += `<div class="bot-message"><strong>Bot:</strong> ${data.reply}</div>`;
+            } else {
+                chatBox.innerHTML += `<div class="bot-message"><strong>Bot:</strong> Sorry, I didn't understand that.</div>`;
+            }
+        } catch (error) {
+            chatBox.innerHTML += `<div class="bot-message"><strong>Bot:</strong> There was an error: ${error.message}</div>`;
+        }
+
+        // Clear the input field
+        document.getElementById("userMessage").value = "";
+
+        // Scroll to the latest message
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+</script>
