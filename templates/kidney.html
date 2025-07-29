@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kidney Disease Prediction</title>
+    <script src="https://code.jquery.com/jquery-2.2.4.js"
+     integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI=" crossorigin="anonymous"></script>
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <header>
+        <a href="{{url_for('index')}}" class="logo">Kidney Disease Prediction</a>
+        <div id="menu-bar" class="fas fa-hamburger"></div>
+        <nav class="navbar">
+            <ul>
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('heart') }}">Heart</a></li>
+                <li><a href="{{ url_for('liver') }}">Liver</a></li>
+                <li><a href="{{ url_for('cancer') }}">Cancer</a></li>
+                <li><a href="{{ url_for('kidney') }}">Kidney</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <span class="title">Kidney Prediction</span>
+
+    <div class="card">
+        <form action="{{ url_for('predict') }}" method="POST">
+            <input class="form-input" type="text" name="age" placeholder="Age eg: 48" required><br>
+            <input class="form-input" type="text" name="bp" placeholder="Blood pressure eg: 70.0" required><br>
+            <input class="form-input" type="text" name="al" placeholder="AL eg: 4.0" required><br>
+            <input class="form-input" type="text" name="su" placeholder="SU eg: 0.0" required><br>
+            <input class="form-input" type="text" name="rbc" placeholder="Red blood cell eg: 0" required><br>
+            <input class="form-input" type="text" name="pc" placeholder="PC eg: 1" required><br>
+            <input class="form-input" type="text" name="pcc" placeholder="PCC eg: 1" required><br>
+            <input class="form-input" type="text" name="ba" placeholder="BA eg: 0" required><br>
+            <input class="form-input" type="text" name="bgr" placeholder="BGR eg: 117.0" required><br>
+            <input class="form-input" type="text" name="bu" placeholder="BU eg: 56.0" required><br>
+            <input class="form-input" type="text" name="sc" placeholder="SC eg: 3.8" required><br>
+            <input class="form-input" type="text" name="pot" placeholder="Pot eg: 2.5" required><br>
+            <input class="form-input" type="text" name="wc" placeholder="WC eg: 6700" required><br>
+            <input class="form-input" type="text" name="htn" placeholder="HTN eg: 1" required><br>
+            <input class="form-input" type="text" name="dm" placeholder="DM eg: 0" required><br>
+            <input class="form-input" type="text" name="cad" placeholder="CAD eg: 0" required><br>
+            <input class="form-input" type="text" name="pe" placeholder="PE eg: 1" required><br>
+            <input class="form-input" type="text" name="ane" placeholder="ANE eg: 1" required><br>
+            <input type="submit" class="my-cta-button" value="Predict">
+        </form>
+    </div>
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>    
+</body>
+</html>
