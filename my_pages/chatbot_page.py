@@ -4,7 +4,7 @@ from openai import OpenAI
 
 client = OpenAI(
     base_url="https://integrate.api.nvidia.com/v1",
-    api_key="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"  
+    api_key="key"  
 )
 
 def app():
