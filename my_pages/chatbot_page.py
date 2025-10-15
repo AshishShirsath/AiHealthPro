@@ -1,48 +1,62 @@
-import streamlit as st
-from openai import OpenAI
-
-
-client = OpenAI(
-    base_url="https://integrate.api.nvidia.com/v1",
-    api_key="key"  
-)
-
 def app():
-    st.title("Medical Chatbot")
-    st.write("Ask me anything about the Health Care!")
+    import streamlit as st
+    import pickle
+    import pandas as pd
+    from sklearn.metrics.pairwise import cosine_similarity
 
+    with open("models/df_symptoms.pkl", "rb") as f:
+        df_symptoms = pickle.load(f)
+    with open("models/vectorizer.pkl", "rb") as f:
+        vectorizer = pickle.load(f)
+    with open("models/X.pkl", "rb") as f:
+        X = pickle.load(f)
 
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = []
+    dk = pd.read_csv("data/symptom_Description.csv")
+    dm = pd.read_csv("data/cleaned_precautions.csv")
 
+    def clean_text(text):
+        return " ".join(str(text).lower().strip().split())
 
-    for role, content in st.session_state.chat_history:
-        with st.chat_message(role):
-            st.markdown(content)
+    def predict_diseases(user_text, df_symptoms, vectorizer, X, top_k=3):
+        user_clean = clean_text(user_text)
+        if not user_clean:
+            return []
+        v = vectorizer.transform([user_clean])
+        sim = cosine_similarity(v, X)[0]
+        idx = sim.argsort()[::-1][:top_k]
+        results = []
+        for i in idx:
+            if sim[i] <= 0:
+                continue
+            disease = df_symptoms.iloc[i]['Disease']
+            symptoms = df_symptoms.iloc[i]['All_Symptoms']
+            description = dk.loc[dk['Disease'] == disease, 'Description'].values
+            description = description[0] if len(description) > 0 else "No description available."
+            precaution = dm.loc[dm['Disease'] == disease, 'Precaution'].values
+            precaution = precaution[0] if len(precaution) > 0 else "No precautions available."
+            results.append({
+                "disease": disease,
+                "score": sim[i],
+                "description": description,
+                "symptoms": symptoms,
+                "precaution": precaution
+            })
+        return results
 
+    st.set_page_config(page_title="🩺 Symptom → Disease Assistant", layout="wide")
+    
+    st.write("Enter your symptoms to find likely diseases with descriptions and precautions. (Educational use only)")
 
-    user_input = st.chat_input("Type your message...")
-    if user_input:
+    user_input = st.text_area("Describe your symptoms:", height=100)
+    top_k = st.slider("Number of top matches", 1, 5, 3)
 
-        st.session_state.chat_history.append(("user", user_input))
-        with st.chat_message("user"):
-            st.markdown(user_input)
-
-
-        try:
-            completion = client.chat.completions.create(
-                model="nvidia/llama-3.1-nemotron-70b-instruct",
-                messages=[{"role": "user", "content": user_input}],
-                temperature=0.5,
-                top_p=1,
-                max_tokens=512
-            )
-            ai_reply = completion.choices[0].message.content
-
-        except Exception as e:
-            ai_reply = f"⚠️ Error: {e}"
-
-
-        st.session_state.chat_history.append(("assistant", ai_reply))
-        with st.chat_message("assistant"):
-            st.markdown(ai_reply)
+    if st.button("Predict Diseases"):
+        predictions = predict_diseases(user_input, df_symptoms, vectorizer, X, top_k)
+        if not predictions:
+            st.warning("No matching disease found. Try different symptoms.")
+        else:
+            for pred in predictions:
+                with st.expander(f"{pred['disease']} (Score: {pred['score']:.3f})"):
+                    st.markdown(f"**Description:** {pred['description']}")
+                    st.markdown(f"**Symptoms:** {pred['symptoms']}")
+                    st.markdown(f"**Precautions:** {pred['precaution']}")
